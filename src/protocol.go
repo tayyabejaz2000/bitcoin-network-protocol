@@ -89,12 +89,12 @@ func CreateNetworkAddress(ip_address string, port uint16) NetAddr {
 	}
 }
 
-func CreateSubversion() []byte {
-	var subversion = "/Satoshi:0.7.2/"
+func CreateSubversion(sub_version string) []byte {
+	var subversion = "/" + sub_version + "/"
 	return bytes.Join([][]byte{{byte(len(subversion))}, []byte(subversion)}, []byte{})
 }
 
-func CreatePayloadVersion(peer_ip_address string) PayloadVersion {
+func CreatePayloadVersion(peer_ip_address string, sub_version string) PayloadVersion {
 	var version int32 = 60002
 	var services = SERVICE_NODE_NETWORK
 	var timestamp = time.Now().Unix()
@@ -109,7 +109,7 @@ func CreatePayloadVersion(peer_ip_address string) PayloadVersion {
 		AddrFrom:    addr_local,
 		AddrRecv:    addr_peer,
 		Nonce:       nonce,
-		UserAgent:   CreateSubversion(),
+		UserAgent:   CreateSubversion(sub_version),
 		StartHeight: int32(start_height),
 	}
 }
