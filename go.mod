@@ -1,3 +1,3 @@
-module blockchain_node
+module bitcoin_protocol
 
 go 1.17
