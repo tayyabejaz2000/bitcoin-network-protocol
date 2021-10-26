@@ -130,3 +130,63 @@ func CreateGetData(tx_ids []string) GetData {
 	}
 	return getData
 }
+
+func (n *NetAddr) Blob() []byte {
+	var bytebuffer = make([]byte, 10+len(n.Addr))
+	var i = 0
+	binary.LittleEndian.PutUint64(bytebuffer, n.Services)
+	i += 8
+	copy(bytebuffer[i:], n.Addr)
+	i += len(n.Addr)
+	binary.LittleEndian.PutUint16(bytebuffer[i:], n.Port)
+	return bytebuffer
+}
+
+func (m *Message) Blob() []byte {
+	var bytebuffer = make([]byte, 24+len(m.Payload))
+	binary.LittleEndian.PutUint32(bytebuffer, m.Magic)
+	copy(bytebuffer[4:], m.Command[:])
+	binary.LittleEndian.PutUint32(bytebuffer[16:], m.Length)
+	binary.LittleEndian.PutUint32(bytebuffer[20:], m.Checksum)
+	copy(bytebuffer[24:], m.Payload)
+	return bytebuffer
+}
+
+func (p *PayloadVersion) Blob() []byte {
+	var bytebuffer = make([]byte, 84+len(p.UserAgent))
+	var i = 0
+	binary.LittleEndian.PutUint32(bytebuffer, uint32(p.Version))
+	i += 4
+	binary.LittleEndian.PutUint64(bytebuffer[i:], p.Services)
+	i += 8
+	binary.LittleEndian.PutUint64(bytebuffer[i:], uint64(p.Timestamp))
+	i += 8
+	var addrRecvBlob = p.AddrRecv.Blob()
+	copy(bytebuffer[i:], addrRecvBlob)
+	i += len(addrRecvBlob)
+	var addrFromBlob = p.AddrFrom.Blob()
+	copy(bytebuffer[i:], addrFromBlob)
+	i += len(addrFromBlob)
+	binary.LittleEndian.PutUint64(bytebuffer[i:], p.Nonce)
+	i += 8
+	copy(bytebuffer[i:], p.UserAgent)
+	i += len(p.UserAgent)
+	binary.LittleEndian.PutUint32(bytebuffer[i:], uint32(p.StartHeight))
+	return bytebuffer
+}
+
+func (i *InventoryVector) Blob() []byte {
+	var bytebuffer = make([]byte, 36)
+	binary.LittleEndian.PutUint32(bytebuffer, i.Type)
+	copy(bytebuffer[4:], i.Hash[:])
+	return bytebuffer
+}
+
+func (g *GetData) Blob() []byte {
+	var bytebuffer = make([]byte, 1+len(g.Inventory)*36)
+	bytebuffer[0] = g.Count
+	for i, iv := range g.Inventory {
+		copy(bytebuffer[1+(i*36):], iv.Blob())
+	}
+	return bytebuffer
+}
